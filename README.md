@@ -2,7 +2,8 @@
 
 This is an example app which demonstrates the interfacing between Rust and an Android application.
 This shows only the user side and ignores mostly the setup needed from the Rust perspective.
-The companion project is the (android_rust_library)[./] which shows the other side needed for a nice and
+The companion project is the [android_rust_library](https://github.com/santifa/android-rust-lib)
+which shows the other side needed for a nice and
 smooth interfacing. As this is only an experiment for demonstration, the code is not very well-written.
 
 ## Android perspective

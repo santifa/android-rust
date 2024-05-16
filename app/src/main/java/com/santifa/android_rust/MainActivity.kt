@@ -44,6 +44,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.compose.AppTheme
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 
@@ -239,6 +243,7 @@ fun AddScreen(navController: NavController) {
     })
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun ComplexOpScreen(navController: NavController) {
     val introText = "This screen demonstrates a more complex operation. " +
@@ -268,11 +273,15 @@ fun ComplexOpScreen(navController: NavController) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         Button(onClick = {
-            val (result: String, duration: Duration) = measureTimedValue {
-                listPerfect(inputLength.toInt())
+                GlobalScope.launch {
+                    suspend {
+                        val (result: String, duration: Duration) = measureTimedValue {
+                            listPerfect(inputLength.toInt())
+                        }
+                        complexResult = result
+                        benchTime = "Got Kotlin result after ${duration.inWholeSeconds} s"
+                    }.invoke()
             }
-            complexResult = result
-            benchTime = "Got result after ${duration.inWholeMilliseconds}"
         }) {
             Text(text = "Call Kotlin")
         }
@@ -280,7 +289,16 @@ fun ComplexOpScreen(navController: NavController) {
             currentScreen = RustAppWorkflow.ComplexOperation.name,
             nextView = { navController.navigate(RustAppWorkflow.Start.name) },
             function = {
-                complexResult = "The result is unknown"
+
+                GlobalScope.launch {
+                    suspend {
+                        val (result: String, duration) = measureTimedValue {
+                            NativeLibrary.perfectNumbers(inputLength.toInt()).joinToString(", ")
+                        }
+                        complexResult = result
+                        benchTime = "Got Rust result after ${duration.inWholeSeconds} s"
+                    }.invoke()
+                }
             }
         )
     })
